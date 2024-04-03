@@ -1,7 +1,17 @@
 <template>
-    <form @submit.prevent="saveMovie" method="post" id="movieForm">
-        <h2>Add a Movie</h2>
+    <h2>Add a Movie</h2>
 
+    <div v-if="successMessage" class="alert alert-success">
+      {{ successMessage }}
+    </div>
+    
+    <div v-if="errorMessage.length > 0" class="alert alert-danger">
+      <ul>
+        <li v-for="error in errorMessage" :key="error">{{ error }}</li>
+      </ul>
+    </div>
+
+    <form @submit.prevent="saveMovie" method="post" id="movieForm">
 
         <div class="form-group mb-3">
             <label for="title" class="form-label"><b>Movie Title</b></label>
@@ -28,6 +38,8 @@
 
     import { ref, onMounted } from "vue";
     let csrf_token = ref("");
+    let successMessage = ref("");
+    let errorMessage = ref("");
 
     const saveMovie=() => {
 
@@ -45,10 +57,20 @@
             return response.json();
         })
         .then(function (data) {
-            // display a success message
+
+            if ("errors" in data){
+                console.log(data);
+                errorMessage.value=data.errors;
+                successMessage.value = '';
+            }else{
+                errorMessage.value = [];
+                // Display success message
+                successMessage.value = data.message;
+                movieForm.reset();
+            }
         })
         .catch(function (error) {
-            console.log(error);
+            console.error('Error:', error);
         });
     }
 
@@ -87,3 +109,4 @@ form{
 
 
 </style>
+

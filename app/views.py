@@ -4,7 +4,7 @@ from flask import render_template, request, jsonify, send_file, redirect, url_fo
 from werkzeug.utils import secure_filename
 from app.models import Movie
 from app.forms import MovieForm
-
+from flask_wtf.csrf import generate_csrf
 
 
 ###
@@ -38,7 +38,7 @@ def movies():
         filename = secure_filename(p_poster.filename)
         p_poster.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-        movie = Movie(title= p_title, description=p_description, filename=filename)
+        movie = Movie(title= p_title, description=p_description, poster=filename)
         db.session.add(movie)
         db.session.commit()
 
@@ -52,6 +52,10 @@ def movies():
 
     else:
         return jsonify({'errors': form_errors(mform)})
+    
+@app.route('/api/v1/csrf-token', methods=['GET'])
+def get_csrf():
+    return jsonify({'csrf_token': generate_csrf()})
 
 
 def get_uploaded_images():

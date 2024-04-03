@@ -13,15 +13,15 @@ class Movie(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     title = db.Column(db.String(100))
-    description = db.Column(db.TextArea(300))
+    description = db.Column(db.String(300))
     poster = db.Column(db.String(128))
-    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    created_at = db.Column(db.DateTime(timezone=True), nullable=False)
 
-    def __init__(self, title, description, poster,  created_at):
+    def __init__(self, title, description, poster):
         self.title = title
         self.description = description
-        self.username = poster
-        self. created_at =  created_at
+        self.poster = poster
+        self.created_at = func.now()
 
     def is_authenticated(self):
         return True

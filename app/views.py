@@ -26,32 +26,54 @@ def about():
 @app.route('/api/v1/movies', methods=['POST'])
 def movies():
     """displaying the form to add a new movie."""
-    mform = MovieForm()
+    if request.method == 'POST':
+        mform = MovieForm()
 
-    if mform.validate_on_submit():
+        if mform.validate_on_submit():
 
-        p_title = mform.title.data
-        p_description = mform.description.data
+            p_title = mform.title.data
+            p_description = mform.description.data
 
-        p_poster = mform.poster.data
+            p_poster = mform.poster.data
 
-        filename = secure_filename(p_poster.filename)
-        p_poster.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            filename = secure_filename(p_poster.filename)
+            p_poster.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
-        movie = Movie(title= p_title, description=p_description, poster=filename)
-        db.session.add(movie)
-        db.session.commit()
+            movie = Movie(title= p_title, description=p_description, poster=filename)
+            db.session.add(movie)
+            db.session.commit()
 
-        flash('Movie Created and Saved', 'success')
-        return jsonify({
-                "message": "Movie Successfully added",
-                "title": movie.title,
-                "poster": movie.poster,
-                "description": movie.description
-        })
+            return jsonify({
+                    "message": "Movie Successfully added",
+                    "title": movie.title,
+                    "poster": movie.poster,
+                    "description": movie.description
+            })
 
-    else:
-        return jsonify({'errors': form_errors(mform)})
+        else:
+            return jsonify({'errors': form_errors(mform)})
+    
+
+@app.route("/api/v1/movies", methods=['GET'])
+def add_movies():
+    if request.method == 'GET':
+        moveies_all=Movie.query.all()
+        movies_lst =[]
+        for m in moveies_all:
+            movies={
+                "id": m.id,
+                "title": m.title,
+                "description": m.description,
+                "poster": "/api/v1/posters/"+ m.poster
+            }
+            movies_lst.append(movies)
+        return jsonify({'movies': movies_lst})
+    
+
+@app.route("/api/v1/posters/<filename>", methods=['GET'])
+def get_movieposter(filename):
+    return send_from_directory(os.path.join(os.getcwd(),app.config['UPLOAD_FOLDER']), filename)
+
     
 @app.route('/api/v1/csrf-token', methods=['GET'])
 def get_csrf():
